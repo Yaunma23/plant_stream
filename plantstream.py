@@ -5,11 +5,14 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # === Google Sheet Config ===
-json_keyfile = 'pla_key.json'
 spreadsheet_id = '1XdXlgTWxEDfU0uHK1Z3mM885JQuM0EH16DrDaIHP3zc'
 
 st.set_page_config(page_title="🌿 Plant Monitoring Dashboard", layout="wide")
 st.title("🌿 Real-time Plant Monitoring Dashboard")
+
+# Auto-refresh every 60 seconds
+st.query_params["refresh"] = str(pd.Timestamp.now())  # Updates URL query param
+st.markdown("<meta http-equiv='refresh' content='60'>", unsafe_allow_html=True)
 
 # === Function to Load Sheet ===
 @st.cache_data
@@ -20,7 +23,9 @@ def load_sheet_data(sheet_name):
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/drive.file"
     ]
-    creds = Credentials.from_service_account_file(json_keyfile, scopes=scope)
+
+    creds_info = dict(st.secrets["google_service_account"])
+    creds = Credentials.from_service_account_info(creds_info, scopes=scope)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
@@ -36,6 +41,7 @@ try:
     st.subheader("📈 Environmental Sensor Trends")
 
     col1, col2 = st.columns(2)
+
     with col1:
         fig_temp = px.line(df, x='datetime', y='temperature',
                            title='🌡️ Temperature Over Time',
@@ -67,7 +73,7 @@ try:
         st.plotly_chart(fig_ph, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Error loading Sheet1: {e}")
+    st.error(f"❌ Error loading Sheet1: {e}")
 
 # === Load and plot CAT (Categorical Monitoring Data) ===
 st.divider()
@@ -98,9 +104,9 @@ try:
     st.plotly_chart(fig_cat, use_container_width=True)
 
 except Exception as e:
-    st.error(f"Error loading cat: {e}")
+    st.error(f"❌ Error loading cat: {e}")
 
-# === Raw Data Section (at the bottom) ===
+# === Raw Data Section ===
 st.divider()
 st.subheader("📋 Raw Data Tables")
 
@@ -116,5 +122,5 @@ with st.expander("🔎 View Raw cat Data"):
     except:
         st.warning("cat data not available.")
 
-# === Timestamp Footer ===
+# === Footer ===
 st.caption("Last updated: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
