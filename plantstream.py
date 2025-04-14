@@ -124,3 +124,16 @@ with st.expander("🔎 View Raw cat Data"):
 
 # === Footer ===
 st.caption("Last updated: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+def auto_refresh(interval_sec=5):
+    st.markdown(
+        f"""
+        <meta http-equiv="refresh" content="{interval_sec}">
+        """,
+        unsafe_allow_html=True
+    )
+
+auto_refresh(5)
+df = load_sheet_data()
+st.write(df)
+
