@@ -10,6 +10,10 @@ spreadsheet_id = '1XdXlgTWxEDfU0uHK1Z3mM885JQuM0EH16DrDaIHP3zc'
 st.set_page_config(page_title="🌿 Plant Monitoring Dashboard", layout="wide")
 st.title("🌿 Real-time Plant Monitoring Dashboard")
 
+if st.button("🔄 Refresh Data"):
+    st.cache_data.clear()
+    st.experimental_rerun()
+
 # Auto-refresh every 60 seconds
 st.query_params["refresh"] = str(pd.Timestamp.now())  # Updates URL query param
 st.markdown("<meta http-equiv='refresh' content='60'>", unsafe_allow_html=True)
@@ -125,15 +129,4 @@ with st.expander("🔎 View Raw cat Data"):
 # === Footer ===
 st.caption("Last updated: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-def auto_refresh(interval_sec=5):
-    st.markdown(
-        f"""
-        <meta http-equiv="refresh" content="{interval_sec}">
-        """,
-        unsafe_allow_html=True
-    )
-
-auto_refresh(5)
-df = load_sheet_data()
-st.write(df)
 
