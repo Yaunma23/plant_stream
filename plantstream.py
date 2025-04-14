@@ -9,10 +9,7 @@ spreadsheet_id = '1XdXlgTWxEDfU0uHK1Z3mM885JQuM0EH16DrDaIHP3zc'
 
 st.set_page_config(page_title="🌿 Plant Monitoring Dashboard", layout="wide")
 st.title("🌿 Real-time Plant Monitoring Dashboard")
-    
-# Auto-refresh every 60 seconds
-st.query_params["refresh"] = str(pd.Timestamp.now())  # Updates URL query param
-st.markdown("<meta http-equiv='refresh' content='300'>", unsafe_allow_html=True)
+
 
 # === Function to Load Sheet ===
 @st.cache_data
