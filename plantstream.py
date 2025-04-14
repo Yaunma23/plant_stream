@@ -12,10 +12,10 @@ st.title("🌿 Real-time Plant Monitoring Dashboard")
 
 if st.button("🔄 Refresh Sheet1 Data"):
     st.cache_data.clear()
-    df = load_sheet_data()
+    df = load_sheet_data("Sheet1")
     st.success("Data refreshed!")
 else:
-    df = load_sheet_data()
+    df_cat = load_sheet_data("cat")
     
 # Auto-refresh every 60 seconds
 st.query_params["refresh"] = str(pd.Timestamp.now())  # Updates URL query param
