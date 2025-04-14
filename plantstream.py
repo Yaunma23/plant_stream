@@ -150,7 +150,7 @@ with st.expander("🔎 View Raw Data"):
 # === Footer ===
 st.caption("Last updated: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-if st.button("🔄 Refresh Sheet1 Data"):
+if st.button("🔄 Refresh "):
     st.cache_data.clear()
     df = load_sheet_data("Sheet1")
     st.success("Data refreshed!")
