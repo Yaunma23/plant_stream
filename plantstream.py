@@ -19,7 +19,6 @@ def load_sheet_data(sheet_name):
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/drive.file"
     ]
-
     creds_info = dict(st.secrets["google_service_account"])
     creds = Credentials.from_service_account_info(creds_info, scopes=scope)
     client = gspread.authorize(creds)
@@ -71,10 +70,8 @@ try:
 except Exception as e:
     st.error(f"❌ Error loading Sheet1: {e}")
 
-# === Classify latest data row into High, Low, Normal and write to 'cat' sheet ===
+# === Classify ALL data rows into High, Low, Normal and write to 'cat' sheet ===
 try:
-    latest_row = df.iloc[-1]
-
     def classify(value, low, high):
         if value < low:
             return "Low"
@@ -83,28 +80,29 @@ try:
         else:
             return "Normal"
 
-    cat_entry = {
-        'temperature': classify(latest_row['temperature'], 27, 31),
-        'humidity': classify(latest_row['humidity'], 70, 95),
-        'soil moisture': classify(latest_row['soil moisture'], 200, 410),
-        'ph': classify(latest_row['ph'], 6.2, 7.8)
-    }
+    cat_data = []
+    for _, row in df.iterrows():
+        cat_data.append({
+            'temperature': classify(row['temperature'], 27, 31),
+            'humidity': classify(row['humidity'], 70, 95),
+            'soil moisture': classify(row['soil moisture'], 200, 410),
+            'ph': classify(row['ph'], 6.2, 7.8)
+        })
 
-    # Convert to DataFrame
-    cat_df = pd.DataFrame([cat_entry])
+    cat_df = pd.DataFrame(cat_data)
 
-    # Append to 'cat' sheet
-    scope = [
+    # Upload full cat_df to the "cat" sheet
+    creds_info = dict(st.secrets["google_service_account"])
+    creds = Credentials.from_service_account_info(creds_info, scopes=[
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
         "https://www.googleapis.com/auth/drive.file"
-    ]
-    creds_info = dict(st.secrets["google_service_account"])
-    creds = Credentials.from_service_account_info(creds_info, scopes=scope)
+    ])
     client = gspread.authorize(creds)
     cat_sheet = client.open_by_key(spreadsheet_id).worksheet("cat")
-    cat_sheet.append_row(list(cat_entry.values()))
+    cat_sheet.clear()
+    cat_sheet.update([cat_df.columns.values.tolist()] + cat_df.values.tolist())
 
 except Exception as e:
     st.error(f"❌ Failed to update 'cat' sheet: {e}")
