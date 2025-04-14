@@ -10,10 +10,13 @@ spreadsheet_id = '1XdXlgTWxEDfU0uHK1Z3mM885JQuM0EH16DrDaIHP3zc'
 st.set_page_config(page_title="🌿 Plant Monitoring Dashboard", layout="wide")
 st.title("🌿 Real-time Plant Monitoring Dashboard")
 
-if st.button("🔄 Refresh Data"):
+if st.button("🔄 Refresh Sheet1 Data"):
     st.cache_data.clear()
-    st.experimental_rerun()
-
+    df = load_sheet_data()
+    st.success("Data refreshed!")
+else:
+    df = load_sheet_data()
+    
 # Auto-refresh every 60 seconds
 st.query_params["refresh"] = str(pd.Timestamp.now())  # Updates URL query param
 st.markdown("<meta http-equiv='refresh' content='60'>", unsafe_allow_html=True)
