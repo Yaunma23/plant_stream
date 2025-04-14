@@ -12,7 +12,7 @@ st.title("🌿 Real-time Plant Monitoring Dashboard")
     
 # Auto-refresh every 60 seconds
 st.query_params["refresh"] = str(pd.Timestamp.now())  # Updates URL query param
-st.markdown("<meta http-equiv='refresh' content='60'>", unsafe_allow_html=True)
+st.markdown("<meta http-equiv='refresh' content='300'>", unsafe_allow_html=True)
 
 # === Function to Load Sheet ===
 @st.cache_data
