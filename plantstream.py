@@ -109,7 +109,7 @@ except Exception as e:
 
 # === Load and plot CAT (Categorical Monitoring Data) ===
 st.divider()
-st.subheader("🔍 Qualitative Monitoring Insights (CAT)")
+st.subheader("🔍 Qualitative Monitoring Insights ")
 
 try:
     df_cat = load_sheet_data("cat")
@@ -140,17 +140,12 @@ except Exception as e:
 st.divider()
 st.subheader("📋 Raw Data Tables")
 
-with st.expander("🔎 View Raw Sheet1 Data"):
+with st.expander("🔎 View Raw Data"):
     try:
         st.dataframe(df, use_container_width=True)
     except:
         st.warning("Sheet1 data not available.")
 
-with st.expander("🔎 View Raw cat Data"):
-    try:
-        st.dataframe(df_cat, use_container_width=True)
-    except:
-        st.warning("cat data not available.")
 
 # === Footer ===
 st.caption("Last updated: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
