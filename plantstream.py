@@ -10,7 +10,6 @@ spreadsheet_id = '1XdXlgTWxEDfU0uHK1Z3mM885JQuM0EH16DrDaIHP3zc'
 st.set_page_config(page_title="🌿 Plant Monitoring Dashboard", layout="wide")
 st.title("🌿 Real-time Plant Monitoring Dashboard")
 
-
 # === Function to Load Sheet ===
 @st.cache_data
 def load_sheet_data(sheet_name):
@@ -27,7 +26,7 @@ def load_sheet_data(sheet_name):
     sheet = client.open_by_key(spreadsheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
     df = pd.DataFrame(data)
-    df.columns = df.columns.str.strip().str.lower()  # Clean headers
+    df.columns = df.columns.str.strip().str.lower()
     return df
 
 # === Load and plot Sheet1 (Numeric Monitoring Data) ===
@@ -72,6 +71,44 @@ try:
 except Exception as e:
     st.error(f"❌ Error loading Sheet1: {e}")
 
+# === Classify latest data row into High, Low, Normal and write to 'cat' sheet ===
+try:
+    latest_row = df.iloc[-1]
+
+    def classify(value, low, high):
+        if value < low:
+            return "Low"
+        elif value > high:
+            return "High"
+        else:
+            return "Normal"
+
+    cat_entry = {
+        'temperature': classify(latest_row['temperature'], 27, 31),
+        'humidity': classify(latest_row['humidity'], 70, 95),
+        'soil moisture': classify(latest_row['soil moisture'], 200, 410),
+        'ph': classify(latest_row['ph'], 6.2, 7.8)
+    }
+
+    # Convert to DataFrame
+    cat_df = pd.DataFrame([cat_entry])
+
+    # Append to 'cat' sheet
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/drive.file"
+    ]
+    creds_info = dict(st.secrets["google_service_account"])
+    creds = Credentials.from_service_account_info(creds_info, scopes=scope)
+    client = gspread.authorize(creds)
+    cat_sheet = client.open_by_key(spreadsheet_id).worksheet("cat")
+    cat_sheet.append_row(list(cat_entry.values()))
+
+except Exception as e:
+    st.error(f"❌ Failed to update 'cat' sheet: {e}")
+
 # === Load and plot CAT (Categorical Monitoring Data) ===
 st.divider()
 st.subheader("🔍 Qualitative Monitoring Insights (CAT)")
@@ -79,10 +116,8 @@ st.subheader("🔍 Qualitative Monitoring Insights (CAT)")
 try:
     df_cat = load_sheet_data("cat")
 
-    # Melt data to long format
     df_melted = df_cat.melt(var_name='parameter', value_name='level')
 
-    # Custom color map for categories
     category_colors = {
         'High': '#FF4136',
         'Normal': '#2ECC40',
@@ -121,7 +156,6 @@ with st.expander("🔎 View Raw cat Data"):
 
 # === Footer ===
 st.caption("Last updated: " + pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"))
-
 
 if st.button("🔄 Refresh Sheet1 Data"):
     st.cache_data.clear()
